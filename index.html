@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>등차수열 시각화</title>
+  <!-- Chart.js 불러오기 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      max-width: 900px;
+      margin: auto;
+    }
+    canvas {
+      margin-top: 2rem;
+    }
+    .input-group {
+      margin-bottom: 1rem;
+    }
+    label {
+      display: inline-block;
+      width: 60px;
+    }
+  </style>
+</head>
+<body>
+  <h2>등차수열 그래프 + 누적합 시각화</h2>
+
+  <!-- 사용자 입력창 -->
+  <div>
+    <div class="input-group">
+      <label for="a">초항 a:</label>
+      <input type="number" id="a" value="2" />
+    </div>
+    <div class="input-group">
+      <label for="d">공차 d:</label>
+      <input type="number" id="d" value="3" />
+    </div>
+    <div class="input-group">
+      <label for="n">항 수 n:</label>
+      <input type="number" id="n" value="8" />
+    </div>
+    <button onclick="draw()">그래프 그리기</button>
+  </div>
+
+  <!-- 그래프 영역 -->
+  <canvas id="sequenceChart"></canvas>
+
+  <!-- 공식 결과 출력 -->
+  <h3 id="sumText"></h3>
+
+  <script>
+    let chart; // Chart 객체 저장용
+
+    // 그래프를 그리는 함수
+    function draw() {
+      // 입력값 읽기
+      const a = Number(document.getElementById("a").value); // 초항
+      const d = Number(document.getElementById("d").value); // 공차
+      const n = Number(document.getElementById("n").value); // 항 수
+
+      const labels = []; // x축 라벨 (항 번호)
+      const terms = [];  // 등차수열 항 aₙ
+      const sums = [];   // 누적합 Sₙ
+      let currentSum = 0;
+
+      // 수열 항 계산 및 누적합 계산
+      for (let i = 1; i <= n; i++) {
+        const term = a + (i - 1) * d; // aₙ 계산
+        currentSum += term;          // 누적합 계산
+
+        labels.push(i);              // 항 번호 라벨 추가
+        terms.push(term);            // 항 추가
+        sums.push(currentSum);      // 누적합 추가
+      }
+
+      // 공식 계산 결과 텍스트 출력
+      const formula = `Sₙ = n/2 × (2a + (n-1)d) = ${n}/2 × (2×${a} + ${n - 1}×${d}) = ${currentSum}`;
+      document.getElementById("sumText").innerText = formula;
+
+      // 기존 그래프 제거 (있다면)
+      if (chart) chart.destroy();
+
+      // 새로운 Chart.js 그래프 생성
+      const ctx = document.getElementById("sequenceChart").getContext("2d");
+      chart = new Chart(ctx, {
+        type: "bar", // 기본은 막대그래프
+        data: {
+          labels: labels, // x축 항 번호
+          datasets: [
+            {
+              label: "등차수열 항 aₙ",
+              data: terms, // 항 데이터
+              type: "line", // 선 그래프로 표시
+              borderColor: "blue",
+              backgroundColor: "blue",
+              tension: 0, // 직선
+              yAxisID: 'y', // 왼쪽 y축
+            },
+            {
+              label: "누적합 Sₙ",
+              data: sums, // 누적합 데이터
+              backgroundColor: "rgba(255, 99, 132, 0.5)",
+              yAxisID: 'y1', // 오른쪽 y축
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          interaction: {
+            mode: 'index',
+            intersect: false,
+          },
+          stacked: false, // y축 분리
+          scales: {
+            y: {
+              type: 'linear',
+              position: 'left',
+              title: {
+                display: true,
+                text: '항의 값 aₙ'
+              }
+            },
+            y1: {
+              type: 'linear',
+              position: 'right',
+              title: {
+                display: true,
+                text: '누적합 Sₙ'
+              },
+              grid: {
+                drawOnChartArea: false, // 오른쪽 y축 격자 제거
+              }
+            }
+          }
+        }
+      });
+    }
+
+    draw(); // 페이지 로딩 시 초기 실행
+  </script>
+</body>
+</html>
